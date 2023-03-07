@@ -6,11 +6,13 @@
 package io.opentelemetry.instrumentation.api.instrumenter;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.internal.ConfigHelper;
 import io.opentelemetry.instrumentation.api.internal.SupportabilityMetrics;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -77,6 +79,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
   private final ErrorCauseExtractor errorCauseExtractor;
   private final boolean enabled;
   private final SpanSuppressor spanSuppressor;
+  private final ConfigHelper configHelper;
 
   Instrumenter(InstrumenterBuilder<REQUEST, RESPONSE> builder) {
     this.instrumentationName = builder.instrumentationName;
@@ -91,6 +94,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
     this.errorCauseExtractor = builder.errorCauseExtractor;
     this.enabled = builder.enabled;
     this.spanSuppressor = builder.buildSpanSuppressor();
+    this.configHelper = builder.configHelper;
   }
 
   /**
@@ -223,6 +227,12 @@ public class Instrumenter<REQUEST, RESPONSE> {
     for (AttributesExtractor<? super REQUEST, ? super RESPONSE> extractor : attributesExtractors) {
       extractor.onEnd(attributes, context, request, response, error);
     }
+
+    if (configHelper.addBaggageToSpans()) {
+      Baggage baggage = Baggage.fromContext(context);
+      baggage.forEach((key, value) -> attributes.put(key, value.getValue()));
+    }
+
     span.setAllAttributes(attributes);
 
     if (!operationListeners.isEmpty()) {

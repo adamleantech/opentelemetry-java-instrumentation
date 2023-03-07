@@ -18,6 +18,7 @@ import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.instrumentation.api.internal.ConfigHelper;
 import io.opentelemetry.instrumentation.api.internal.ConfigPropertiesUtil;
 import io.opentelemetry.instrumentation.api.internal.EmbeddedInstrumentationProperties;
 import io.opentelemetry.instrumentation.api.internal.SpanKey;
@@ -60,6 +61,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
       SpanStatusExtractor.getDefault();
   ErrorCauseExtractor errorCauseExtractor = ErrorCauseExtractor.getDefault();
   boolean enabled = true;
+  ConfigHelper configHelper = new ConfigHelper();
 
   InstrumenterBuilder(
       OpenTelemetry openTelemetry,
@@ -93,6 +95,16 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   @CanIgnoreReturnValue
   public InstrumenterBuilder<REQUEST, RESPONSE> setSchemaUrl(String schemaUrl) {
     this.schemaUrl = requireNonNull(schemaUrl, "schemaUrl");
+    return this;
+  }
+
+  /**
+   * Sets the {@code ConfigHelper} - useful for testing
+   * {@link Instrumenter}.
+   */
+  @CanIgnoreReturnValue
+  public InstrumenterBuilder<REQUEST, RESPONSE> setConfigHelper(ConfigHelper configHelper) {
+    this.configHelper = requireNonNull(configHelper, "configHelper");
     return this;
   }
 
