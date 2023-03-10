@@ -38,14 +38,14 @@ public class PatternFilteringSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
     if (nameFilterPattern != null && nameFilterPattern.matcher(name).matches()) {
-      logger.info("Span for name " + name + " dropped");
+      logger.fine("Span for name " + name + " dropped");
       return SamplingResult.drop();
     }
 
     String httpTarget = attributes.get(SemanticAttributes.HTTP_TARGET);
 
     if (httpTarget != null && httpTargetFilterPattern != null && httpTargetFilterPattern.matcher(httpTarget).matches()) {
-      logger.info("Span for http target " + httpTarget + " dropped");
+      logger.fine("Span for http target " + httpTarget + " dropped");
       return SamplingResult.drop();
     }
 
